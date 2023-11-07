@@ -335,7 +335,7 @@ const PartyTimeTracker = () => {
                       >
                         <Statistic
                           title="Joined At"
-                          value={moment(v.joinedAt).format("DD-MM-YYYY HH:mm")}
+                          value={moment(v.joinedAt).format("DD MMM YYYY HH:mm")}
                         />
                         <Statistic
                           title="Time Played"
@@ -402,7 +402,7 @@ const PartyTimeTracker = () => {
                       >
                         <Statistic
                           title="Joined At"
-                          value={moment(v.joinedAt).format("DD-MM-YYYY HH:mm")}
+                          value={moment(v.joinedAt).format("DD MMM YYYY HH:mm")}
                         />
                         <Statistic
                           title="Out From Party At"
