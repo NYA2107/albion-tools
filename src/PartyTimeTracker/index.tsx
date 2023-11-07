@@ -41,6 +41,19 @@ const PartyTimeTracker = () => {
   const outMember = filteredMemberList.filter((v) => v.currentStatus === "Out");
 
   useEffect(() => {
+    const jsonStorageData = localStorage.getItem("party-time-tracker-data");
+    const jsonElapsedTime = localStorage.getItem(
+      "party-time-tracker-elapsed-time"
+    );
+    if (!jsonStorageData || !jsonElapsedTime) return;
+    const storageData = JSON.parse(jsonStorageData);
+    const elapsedTime = parseInt(jsonElapsedTime);
+    setMemberList(storageData);
+    setFilteredMemberList(storageData);
+    setElapsedTime(elapsedTime);
+  }, []);
+
+  useEffect(() => {
     let timer: number | undefined;
     if (isStart) {
       timer = setInterval(() => {
@@ -60,6 +73,14 @@ const PartyTimeTracker = () => {
           v.name.toLowerCase().includes(textSearch.toLowerCase())
         );
         const tempElapsedTime = elapsedTime + 1;
+        localStorage.setItem(
+          "party-time-tracker-data",
+          JSON.stringify(tempMemberList)
+        );
+        localStorage.setItem(
+          "party-time-tracker-elapsed-time",
+          tempElapsedTime.toString()
+        );
         setMemberList(tempMemberList);
         setFilteredMemberList(tempFilteredList);
         setElapsedTime(tempElapsedTime);
@@ -87,6 +108,7 @@ const PartyTimeTracker = () => {
         timePlayed: 0,
       });
     });
+    localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberText("");
     setMemberList(temp);
     setFilteredMemberList(temp);
@@ -98,6 +120,8 @@ const PartyTimeTracker = () => {
 
   const handleResetAll = () => {
     setIsStart(false);
+    localStorage.setItem("party-time-tracker-data", JSON.stringify([]));
+    localStorage.setItem("party-time-tracker-elapsed-time", "0");
     setMemberList([]);
     setFilteredMemberList([]);
     setElapsedTime(0);
@@ -110,6 +134,7 @@ const PartyTimeTracker = () => {
     const temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
     const currIndex = _.findIndex(temp, (v) => v.id === memberId);
     temp[currIndex].currentStatus = status;
+    localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberList(temp);
     setFilteredMemberList(temp);
   };
@@ -117,6 +142,7 @@ const PartyTimeTracker = () => {
   const handleRemove = (memberId: string) => {
     let temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
     temp = temp.filter((v) => v.id !== memberId);
+    localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberList(temp);
     setFilteredMemberList(temp);
   };
