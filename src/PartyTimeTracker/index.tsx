@@ -196,6 +196,7 @@ const PartyTimeTracker = () => {
               alignItems: "center",
               justifyContent: "center",
               paddingTop: "3em",
+              flexWrap: "wrap",
             }}
           >
             <Button
