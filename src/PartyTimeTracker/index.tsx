@@ -433,7 +433,7 @@ const PartyTimeTracker = () => {
                         />
                         <Statistic
                           title="Out From Party At"
-                          value={moment(v.outAt).format("DD-MM-YYYY HH:mm")}
+                          value={moment(v.outAt).format("DD MMM YYYY HH:mm")}
                         />
                         <Statistic
                           title="Time Played"

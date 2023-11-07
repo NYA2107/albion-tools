@@ -15,7 +15,7 @@ const router = createBrowserRouter([
         element: <PartyTimeTracker />,
       },
       {
-        path: "/party-time-splitter",
+        path: "/loot-split-tool",
         element: <h1>Halo</h1>,
       },
       {
