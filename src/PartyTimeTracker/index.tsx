@@ -1,5 +1,4 @@
 import {
-  Badge,
   Button,
   Card,
   Col,
@@ -568,7 +567,7 @@ const PartyTimeTracker = () => {
                     <div key={v.id}>
                       <span
                         style={{
-                          background: "#343635",
+                          background: "#797d7b",
                           color: "white",
                           padding: "4px",
                         }}
@@ -577,10 +576,10 @@ const PartyTimeTracker = () => {
                       </span>{" "}
                       <Typography.Text
                         type={
-                          v.action === "Join"
+                          v.action === "Join Party"
                             ? "success"
-                            : v.action === "Break"
-                            ? "secondary"
+                            : v.action === "Take a Break"
+                            ? "warning"
                             : "danger"
                         }
                       >
