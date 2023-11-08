@@ -1,4 +1,14 @@
-import { Button, Card, Col, Collapse, Row, Statistic } from "antd";
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Collapse,
+  Row,
+  Space,
+  Statistic,
+  Typography,
+} from "antd";
 import TextArea from "antd/es/input/TextArea";
 import moment from "moment";
 import { useEffect, useRef, useState } from "react";
@@ -25,6 +35,13 @@ export interface MemberType {
   timePlayed: number;
 }
 
+interface LogType {
+  id: string;
+  memberName: string;
+  action: string;
+  logTime: string;
+}
+
 const PartyTimeTracker = () => {
   const [memberText, setMemberText] = useState<string>("");
   const [memberList, setMemberList] = useState<MemberType[]>([]);
@@ -34,6 +51,7 @@ const PartyTimeTracker = () => {
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isStart, setIsStart] = useState<boolean>(false);
   const [textSearch, setTextSearch] = useState<string>("");
+  const [memberLog, setMemberLog] = useState<LogType[]>([]);
   const activeMember = filteredMemberList.filter(
     (v) => v.currentStatus === "Active"
   );
@@ -49,14 +67,24 @@ const PartyTimeTracker = () => {
     const jsonElapsedTime = localStorage.getItem(
       "party-time-tracker-elapsed-time"
     );
+    const jsonMemberLog = localStorage.getItem("party-time-tracker-member-log");
     console.log(jsonStorageData, jsonStorageData);
-    if (!jsonStorageData || !jsonElapsedTime) return;
+    if (!jsonStorageData || !jsonElapsedTime || !jsonMemberLog) return;
     const storageData = JSON.parse(jsonStorageData);
     const elapsedTime = parseInt(jsonElapsedTime);
+    const memberLog = JSON.parse(jsonMemberLog);
     setMemberList(storageData);
     setFilteredMemberList(storageData);
     setElapsedTime(elapsedTime);
+    setMemberLog(memberLog);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "party-time-tracker-member-log",
+      JSON.stringify(memberLog)
+    );
+  }, [memberLog]);
 
   // useEffect(() => {
   //   // console.log("CHANGE");
@@ -129,6 +157,7 @@ const PartyTimeTracker = () => {
   const handleAddPartyMember = () => {
     if (memberText.length <= 0) return;
     const temp = JSON.parse(JSON.stringify(memberList));
+    const tempLog: LogType[] = JSON.parse(JSON.stringify(memberLog));
     const newMembers = memberText.split("\n");
     newMembers.map((v) => {
       temp.push({
@@ -138,11 +167,18 @@ const PartyTimeTracker = () => {
         currentStatus: "Active",
         timePlayed: 0,
       });
+      tempLog.push({
+        id: `MEMBER-LOG-${Math.random()}`,
+        action: "Join Party",
+        logTime: moment().toISOString(),
+        memberName: v,
+      });
     });
     localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberText("");
     setMemberList(temp);
     setFilteredMemberList(temp);
+    setMemberLog(tempLog);
   };
 
   const handleStart = () => {
@@ -153,9 +189,11 @@ const PartyTimeTracker = () => {
     setIsStart(false);
     localStorage.setItem("party-time-tracker-data", JSON.stringify([]));
     localStorage.setItem("party-time-tracker-elapsed-time", "0");
+    localStorage.setItem("party-time-tracker-member-log", JSON.stringify([]));
     setMemberList([]);
     setFilteredMemberList([]);
     setElapsedTime(0);
+    setMemberLog([]);
   };
 
   const handleChangeStatus = (
@@ -163,15 +201,37 @@ const PartyTimeTracker = () => {
     status: "Active" | "Break" | "Out"
   ) => {
     const temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
+    const tempLog: LogType[] = JSON.parse(JSON.stringify(memberLog));
     const currIndex = _.findIndex(temp, (v) => v.id === memberId);
     if (status === "Out") {
       console.log(status, "AAAAASTATUS");
       temp[currIndex].outAt = moment().toISOString();
+      tempLog.push({
+        id: `MEMBER-LOG-${Math.random()}`,
+        action: "Out From Party",
+        logTime: moment().toISOString(),
+        memberName: temp[currIndex].name,
+      });
+    } else if (status === "Active") {
+      tempLog.push({
+        id: `MEMBER-LOG-${Math.random()}`,
+        action: "Join Party",
+        logTime: moment().toISOString(),
+        memberName: temp[currIndex].name,
+      });
+    } else if (status === "Break") {
+      tempLog.push({
+        id: `MEMBER-LOG-${Math.random()}`,
+        action: "Take a Break",
+        logTime: moment().toISOString(),
+        memberName: temp[currIndex].name,
+      });
     }
     temp[currIndex].currentStatus = status;
     localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberList(temp);
     setFilteredMemberList(temp);
+    setMemberLog(tempLog);
   };
 
   const handleRemove = (memberId: string) => {
@@ -294,201 +354,249 @@ const PartyTimeTracker = () => {
           />
         </Col>
       </Row>
-      <Collapse
-        ghost
-        style={{ backgroundColor: "#F0F2F5" }}
-        items={[
-          {
-            key: "active-member",
-            label: `Member Active (${activeMember.length})`,
-            children: (
-              <div style={{ display: "flex", flexWrap: "wrap" }}>
-                {activeMember.map((v) => {
-                  const hours = Math.floor(v.timePlayed / 3600);
-                  const minutes = Math.floor((v.timePlayed % 3600) / 60);
-                  const seconds = Math.floor(v.timePlayed % 60);
+      <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr" }}>
+        <Collapse
+          ghost
+          style={{ backgroundColor: "#F0F2F5" }}
+          items={[
+            {
+              key: "active-member",
+              label: `Member Active (${activeMember.length})`,
+              children: (
+                <div style={{ display: "flex", flexWrap: "wrap" }}>
+                  {activeMember.map((v) => {
+                    const hours = Math.floor(v.timePlayed / 3600);
+                    const minutes = Math.floor((v.timePlayed % 3600) / 60);
+                    const seconds = Math.floor(v.timePlayed % 60);
+                    return (
+                      <div
+                        style={{ padding: "1em" }}
+                        key={`memberlist-${v.id}`}
+                      >
+                        <Card
+                          style={{ marginTop: "1" }}
+                          title={
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>{v.name}</span>
+                              <Button
+                                icon={<CloseCircleOutlined />}
+                                danger
+                                type="link"
+                                onClick={() => handleRemove(v.id)}
+                              />
+                            </div>
+                          }
+                        >
+                          <Statistic
+                            title="Joined At"
+                            value={moment(v.joinedAt).format(
+                              "DD MMM YYYY HH:mm:ss"
+                            )}
+                          />
+                          <Statistic
+                            title="Time Played"
+                            value={`${hours}:${minutes}:${seconds}`}
+                          />
+                          <Row gutter={10} justify={"end"}>
+                            <Col>
+                              <Button
+                                onClick={() =>
+                                  handleChangeStatus(v.id, "Break")
+                                }
+                              >
+                                Break
+                              </Button>
+                            </Col>
+                            <Col>
+                              <Button
+                                danger
+                                type="primary"
+                                onClick={() => handleChangeStatus(v.id, "Out")}
+                              >
+                                Out
+                              </Button>
+                            </Col>
+                          </Row>
+                        </Card>
+                      </div>
+                    );
+                  })}
+                </div>
+              ),
+            },
+            {
+              key: "break-member",
+              label: `Member On Break (${breakMember.length})`,
+              children: (
+                <div style={{ display: "flex", flexWrap: "wrap" }}>
+                  {breakMember.map((v) => {
+                    const hours = Math.floor(v.timePlayed / 3600);
+                    const minutes = Math.floor((v.timePlayed % 3600) / 60);
+                    const seconds = Math.floor(v.timePlayed % 60);
+                    return (
+                      <div
+                        style={{ padding: "1em" }}
+                        key={`break-memberlist-${v.id}`}
+                      >
+                        <Card
+                          title={
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>{v.name}</span>
+                              <Button
+                                onClick={() => handleRemove(v.id)}
+                                icon={<CloseCircleOutlined />}
+                                danger
+                                type="link"
+                              />
+                            </div>
+                          }
+                        >
+                          <Statistic
+                            title="Joined At"
+                            value={moment(v.joinedAt).format(
+                              "DD MMM YYYY HH:mm:ss"
+                            )}
+                          />
+                          <Statistic
+                            title="Time Played"
+                            value={`${hours}:${minutes}:${seconds}`}
+                          />
+                          <Row gutter={10} justify={"end"}>
+                            <Col>
+                              <Button
+                                type="primary"
+                                onClick={() =>
+                                  handleChangeStatus(v.id, "Active")
+                                }
+                              >
+                                Join
+                              </Button>
+                            </Col>
+                            <Col>
+                              <Button
+                                danger
+                                type="primary"
+                                onClick={() => handleChangeStatus(v.id, "Out")}
+                              >
+                                Out
+                              </Button>
+                            </Col>
+                          </Row>
+                        </Card>
+                      </div>
+                    );
+                  })}
+                </div>
+              ),
+            },
+            {
+              key: "out-member",
+              label: `Member Out From Party (${outMember.length})`,
+              children: (
+                <div style={{ display: "flex", flexWrap: "wrap" }}>
+                  {outMember.map((v) => {
+                    const hours = Math.floor(v.timePlayed / 3600);
+                    const minutes = Math.floor((v.timePlayed % 3600) / 60);
+                    const seconds = Math.floor(v.timePlayed % 60);
+                    return (
+                      <div
+                        style={{ padding: "1em" }}
+                        key={`break-memberlist-${v.id}`}
+                      >
+                        <Card
+                          title={
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>{v.name}</span>
+                              <Button
+                                onClick={() => handleRemove(v.id)}
+                                icon={<CloseCircleOutlined />}
+                                danger
+                                type="link"
+                              />
+                            </div>
+                          }
+                        >
+                          <Statistic
+                            title="Joined At"
+                            value={moment(v.joinedAt).format(
+                              "DD MMM YYYY HH:mm:ss"
+                            )}
+                          />
+                          <Statistic
+                            title="Out From Party At"
+                            value={moment(v.outAt).format(
+                              "DD MMM YYYY HH:mm:ss"
+                            )}
+                          />
+                          <Statistic
+                            title="Time Played"
+                            value={`${hours}:${minutes}:${seconds}`}
+                          />
+                        </Card>
+                      </div>
+                    );
+                  })}
+                </div>
+              ),
+            },
+          ]}
+        />
+        <div>
+          <Card title="Member Log">
+            <div style={{ height: "400px", overflow: "auto" }}>
+              <Space direction="vertical">
+                {memberLog.map((v) => {
                   return (
-                    <div style={{ padding: "1em" }} key={`memberlist-${v.id}`}>
-                      <Card
-                        style={{ marginTop: "1" }}
-                        title={
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>{v.name}</span>
-                            <Button
-                              icon={<CloseCircleOutlined />}
-                              danger
-                              type="link"
-                              onClick={() => handleRemove(v.id)}
-                            />
-                          </div>
+                    <div key={v.id}>
+                      <span
+                        style={{
+                          background: "#343635",
+                          color: "white",
+                          padding: "4px",
+                        }}
+                      >
+                        {v.memberName}
+                      </span>{" "}
+                      <Typography.Text
+                        type={
+                          v.action === "Join"
+                            ? "success"
+                            : v.action === "Break"
+                            ? "secondary"
+                            : "danger"
                         }
                       >
-                        <Statistic
-                          title="Joined At"
-                          value={moment(v.joinedAt).format(
-                            "DD MMM YYYY HH:mm:ss"
-                          )}
-                        />
-                        <Statistic
-                          title="Time Played"
-                          value={`${hours}:${minutes}:${seconds}`}
-                        />
-                        <Row gutter={10} justify={"end"}>
-                          <Col>
-                            <Button
-                              onClick={() => handleChangeStatus(v.id, "Break")}
-                            >
-                              Break
-                            </Button>
-                          </Col>
-                          <Col>
-                            <Button
-                              danger
-                              type="primary"
-                              onClick={() => handleChangeStatus(v.id, "Out")}
-                            >
-                              Out
-                            </Button>
-                          </Col>
-                        </Row>
-                      </Card>
+                        {v.action}
+                      </Typography.Text>{" "}
+                      <Typography.Text>
+                        {moment(v.logTime).format("DD/MM/YY HH:mm:ss")}
+                      </Typography.Text>
                     </div>
                   );
                 })}
-              </div>
-            ),
-          },
-          {
-            key: "break-member",
-            label: `Member On Break (${breakMember.length})`,
-            children: (
-              <div style={{ display: "flex", flexWrap: "wrap" }}>
-                {breakMember.map((v) => {
-                  const hours = Math.floor(v.timePlayed / 3600);
-                  const minutes = Math.floor((v.timePlayed % 3600) / 60);
-                  const seconds = Math.floor(v.timePlayed % 60);
-                  return (
-                    <div
-                      style={{ padding: "1em" }}
-                      key={`break-memberlist-${v.id}`}
-                    >
-                      <Card
-                        title={
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>{v.name}</span>
-                            <Button
-                              onClick={() => handleRemove(v.id)}
-                              icon={<CloseCircleOutlined />}
-                              danger
-                              type="link"
-                            />
-                          </div>
-                        }
-                      >
-                        <Statistic
-                          title="Joined At"
-                          value={moment(v.joinedAt).format(
-                            "DD MMM YYYY HH:mm:ss"
-                          )}
-                        />
-                        <Statistic
-                          title="Time Played"
-                          value={`${hours}:${minutes}:${seconds}`}
-                        />
-                        <Row gutter={10} justify={"end"}>
-                          <Col>
-                            <Button
-                              type="primary"
-                              onClick={() => handleChangeStatus(v.id, "Active")}
-                            >
-                              Join
-                            </Button>
-                          </Col>
-                          <Col>
-                            <Button
-                              danger
-                              type="primary"
-                              onClick={() => handleChangeStatus(v.id, "Out")}
-                            >
-                              Out
-                            </Button>
-                          </Col>
-                        </Row>
-                      </Card>
-                    </div>
-                  );
-                })}
-              </div>
-            ),
-          },
-          {
-            key: "out-member",
-            label: `Member Out From Party (${outMember.length})`,
-            children: (
-              <div style={{ display: "flex", flexWrap: "wrap" }}>
-                {outMember.map((v) => {
-                  const hours = Math.floor(v.timePlayed / 3600);
-                  const minutes = Math.floor((v.timePlayed % 3600) / 60);
-                  const seconds = Math.floor(v.timePlayed % 60);
-                  return (
-                    <div
-                      style={{ padding: "1em" }}
-                      key={`break-memberlist-${v.id}`}
-                    >
-                      <Card
-                        title={
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>{v.name}</span>
-                            <Button
-                              onClick={() => handleRemove(v.id)}
-                              icon={<CloseCircleOutlined />}
-                              danger
-                              type="link"
-                            />
-                          </div>
-                        }
-                      >
-                        <Statistic
-                          title="Joined At"
-                          value={moment(v.joinedAt).format(
-                            "DD MMM YYYY HH:mm:ss"
-                          )}
-                        />
-                        <Statistic
-                          title="Out From Party At"
-                          value={moment(v.outAt).format("DD MMM YYYY HH:mm:ss")}
-                        />
-                        <Statistic
-                          title="Time Played"
-                          value={`${hours}:${minutes}:${seconds}`}
-                        />
-                      </Card>
-                    </div>
-                  );
-                })}
-              </div>
-            ),
-          },
-        ]}
-      />
+              </Space>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
