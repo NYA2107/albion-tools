@@ -1,8 +1,9 @@
 import { Button, Card, Col, Collapse, Row, Statistic } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import moment from "moment";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import _ from "lodash";
+
 import {
   CloseCircleOutlined,
   FlagOutlined,
@@ -13,13 +14,14 @@ import {
 } from "@ant-design/icons";
 import Search from "antd/es/input/Search";
 
-interface MemberType {
+export interface MemberType {
   id: string;
   name: string;
-  joinedAt: string;
+  joinedAt?: string;
   outAt?: string;
   splitPercentage?: number;
-  currentStatus: "Active" | "Break" | "Out";
+  lootSplit?: number;
+  currentStatus?: "Active" | "Break" | "Out";
   timePlayed: number;
 }
 
@@ -39,12 +41,15 @@ const PartyTimeTracker = () => {
     (v) => v.currentStatus === "Break"
   );
   const outMember = filteredMemberList.filter((v) => v.currentStatus === "Out");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const interval = useRef<any>();
 
   useEffect(() => {
     const jsonStorageData = localStorage.getItem("party-time-tracker-data");
     const jsonElapsedTime = localStorage.getItem(
       "party-time-tracker-elapsed-time"
     );
+    console.log(jsonStorageData, jsonStorageData);
     if (!jsonStorageData || !jsonElapsedTime) return;
     const storageData = JSON.parse(jsonStorageData);
     const elapsedTime = parseInt(jsonElapsedTime);
@@ -53,10 +58,36 @@ const PartyTimeTracker = () => {
     setElapsedTime(elapsedTime);
   }, []);
 
+  // useEffect(() => {
+  //   // console.log("CHANGE");
+  //   let tempMemberList: MemberType[] = JSON.parse(JSON.stringify(memberList));
+  //   let tempFilteredList: MemberType[] = JSON.parse(JSON.stringify(memberList));
+  //   tempMemberList = tempMemberList.map((v) => {
+  //     if (v.currentStatus === "Active") {
+  //       return Object.assign(v, { timePlayed: v.timePlayed + 1 });
+  //     }
+  //     return v;
+  //   });
+  //   tempFilteredList = tempMemberList.filter((v: MemberType) =>
+  //     v.name.toLowerCase().includes(textSearch.toLowerCase())
+  //   );
+  //   localStorage.setItem(
+  //     "party-time-tracker-data",
+  //     JSON.stringify(tempMemberList)
+  //   );
+  //   localStorage.setItem(
+  //     "party-time-tracker-elapsed-time",
+  //     totalSeconds.toString()
+  //   );
+  //   setMemberList(tempMemberList);
+  //   setFilteredMemberList(tempFilteredList);
+  //   setElapsedTime(totalSeconds);
+  // }, [totalSeconds]);
+
   useEffect(() => {
-    let timer: number | undefined;
     if (isStart) {
-      timer = setInterval(() => {
+      interval.current = setInterval(() => {
+        console.log("mashok", elapsedTime, moment());
         let tempMemberList: MemberType[] = JSON.parse(
           JSON.stringify(memberList)
         );
@@ -87,9 +118,9 @@ const PartyTimeTracker = () => {
       }, 1000);
     }
     return () => {
-      clearInterval(timer);
+      clearInterval(interval.current);
     };
-  }, [elapsedTime, isStart, memberList]);
+  }, [isStart, elapsedTime, memberList]);
 
   const hours = Math.floor(elapsedTime / 3600);
   const minutes = Math.floor((elapsedTime % 3600) / 60);

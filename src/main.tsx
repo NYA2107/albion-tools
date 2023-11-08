@@ -4,6 +4,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import PartyTimeTracker from "./PartyTimeTracker";
 import "./main.css";
 import Layout from "./Layout";
+import LootSplitTool from "./LootSplitTool";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +17,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/loot-split-tool",
-        element: <h1>Halo</h1>,
+        element: <LootSplitTool />,
       },
       {
         path: "/crafting-tool",
@@ -27,7 +28,7 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  // <React.StrictMode>
+  <RouterProvider router={router} />
+  // </React.StrictMode>
 );
