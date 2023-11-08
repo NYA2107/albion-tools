@@ -164,6 +164,10 @@ const PartyTimeTracker = () => {
   ) => {
     const temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
     const currIndex = _.findIndex(temp, (v) => v.id === memberId);
+    if (status === "Out") {
+      console.log(status, "AAAAASTATUS");
+      temp[currIndex].outAt = moment().toISOString();
+    }
     temp[currIndex].currentStatus = status;
     localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberList(temp);
@@ -327,7 +331,9 @@ const PartyTimeTracker = () => {
                       >
                         <Statistic
                           title="Joined At"
-                          value={moment(v.joinedAt).format("DD MMM YYYY HH:mm")}
+                          value={moment(v.joinedAt).format(
+                            "DD MMM YYYY HH:mm:ss"
+                          )}
                         />
                         <Statistic
                           title="Time Played"
@@ -393,7 +399,9 @@ const PartyTimeTracker = () => {
                       >
                         <Statistic
                           title="Joined At"
-                          value={moment(v.joinedAt).format("DD MMM YYYY HH:mm")}
+                          value={moment(v.joinedAt).format(
+                            "DD MMM YYYY HH:mm:ss"
+                          )}
                         />
                         <Statistic
                           title="Time Played"
@@ -460,11 +468,13 @@ const PartyTimeTracker = () => {
                       >
                         <Statistic
                           title="Joined At"
-                          value={moment(v.joinedAt).format("DD MMM YYYY HH:mm")}
+                          value={moment(v.joinedAt).format(
+                            "DD MMM YYYY HH:mm:ss"
+                          )}
                         />
                         <Statistic
                           title="Out From Party At"
-                          value={moment(v.outAt).format("DD MMM YYYY HH:mm")}
+                          value={moment(v.outAt).format("DD MMM YYYY HH:mm:ss")}
                         />
                         <Statistic
                           title="Time Played"
