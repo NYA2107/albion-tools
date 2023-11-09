@@ -42,6 +42,7 @@ interface LootReducerType {
   name: string;
   type: "percentage" | "exact-value";
   value: number;
+  reducerValue: number;
 }
 
 const LootSplitTool = () => {
@@ -55,20 +56,27 @@ const LootSplitTool = () => {
   const [isOpenActionDrawer, setIsOpenActionDrawer] = useState<boolean>(false);
 
   const calculateAll = (
-    memberList: MemberType[],
-    reducerList: LootReducerType[],
+    members: MemberType[],
+    reducers: LootReducerType[],
     totalLoot: number
   ) => {
     let lootNett = totalLoot;
-    let tempMemberList: MemberType[] = JSON.parse(JSON.stringify(memberList));
-    reducerList.map((v) => {
+    let tempMemberList: MemberType[] = JSON.parse(JSON.stringify(members));
+    let tempReducerList: LootReducerType[] = JSON.parse(
+      JSON.stringify(reducers)
+    );
+    tempReducerList = tempReducerList.map((v) => {
       const type = v.type;
       const value = v.value;
       if (type === "exact-value") {
         lootNett -= value;
+        return Object.assign(v, { reducerValue: value });
       } else if (type === "percentage") {
+        const tempReducerValue = (lootNett * value) / 100;
         lootNett = lootNett - (lootNett * value) / 100;
+        return Object.assign(v, { reducerValue: tempReducerValue });
       }
+      return v;
     });
     tempMemberList = calculateLootPartyPercentage(memberList);
     tempMemberList = tempMemberList.map((v) => {
@@ -77,6 +85,7 @@ const LootSplitTool = () => {
         lootSplit: (v.splitPercentage / 100) * lootNett,
       });
     });
+    setReducerList(tempReducerList);
     setTotalLootNett(lootNett);
     setMemberList(tempMemberList);
   };
@@ -102,9 +111,14 @@ const LootSplitTool = () => {
     const tempReducer: LootReducerType[] = JSON.parse(
       JSON.stringify(reducerList)
     );
-    tempReducer.push({ id: `Reducer-${Math.random()}`, name, type, value });
+    tempReducer.push({
+      id: `Reducer-${Math.random()}`,
+      name,
+      type,
+      value,
+      reducerValue: 0,
+    });
     calculateAll(memberList, tempReducer, totalLoot);
-    setReducerList(tempReducer);
   };
 
   const handleDragReducer = (from: number, to?: number) => {
@@ -121,7 +135,6 @@ const LootSplitTool = () => {
       tempReducer.splice(from + 1, 1);
     }
     calculateAll(memberList, tempReducer, totalLoot);
-    setReducerList(tempReducer);
   };
 
   const handleChangeName = (newName: string, id: string) => {
@@ -169,7 +182,6 @@ const LootSplitTool = () => {
     );
     tempReducer = tempReducer.filter((v) => v.id !== reducerId);
     calculateAll(memberList, tempReducer, totalLoot);
-    setReducerList(tempReducer);
   };
 
   const handleImportData = (file: RcFile) => {
@@ -463,7 +475,11 @@ const LootSplitTool = () => {
                                     {`${new Intl.NumberFormat("id-ID").format(
                                       v.value
                                     )}`}{" "}
-                                    {v.type === "percentage" && "%"}
+                                    {v.type === "percentage" && "%"} ( -
+                                    {new Intl.NumberFormat("id-ID").format(
+                                      v.reducerValue
+                                    )}
+                                    )
                                   </div>
                                   <div>
                                     <Button
