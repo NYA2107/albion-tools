@@ -95,6 +95,7 @@ const PartyTimeTracker = () => {
 
   const handleChangeTab = (activeTab: string) => {
     const temp: MemberType[] = calculateLootPartySummary(memberList);
+    localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberList(temp);
     setFilteredMemberList(temp);
     setActivePageTab(activeTab);
@@ -102,7 +103,7 @@ const PartyTimeTracker = () => {
 
   const handleAddPartyMember = () => {
     if (memberText.length <= 0) return;
-    const temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
+    let temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
     const tempLog: LogType[] = JSON.parse(JSON.stringify(memberLog));
     const newMembers = memberText.split("\n");
     newMembers.map((v) => {
@@ -121,6 +122,7 @@ const PartyTimeTracker = () => {
         memberName: v,
       });
     });
+    temp = calculateLootPartySummary(temp);
     localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberText("");
     setMemberList(temp);
@@ -188,6 +190,7 @@ const PartyTimeTracker = () => {
 
   const handleShowSummary = () => {
     const temp: MemberType[] = calculateLootPartySummary(memberList);
+    localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setActivePageTab("party-member-summary");
     setMemberList(temp);
     setFilteredMemberList(temp);
