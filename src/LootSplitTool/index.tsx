@@ -78,7 +78,7 @@ const LootSplitTool = () => {
       }
       return v;
     });
-    tempMemberList = calculateLootPartyPercentage(memberList);
+    tempMemberList = calculateLootPartyPercentage(tempMemberList);
     tempMemberList = tempMemberList.map((v) => {
       if (!v.splitPercentage) return v;
       return Object.assign(v, {
@@ -215,7 +215,6 @@ const LootSplitTool = () => {
         description: "Your data imported successfully",
         placement: "topRight",
       });
-      localStorage.setItem("party-time-tracker-data", JSON.stringify(result));
       const temp = calculateLootPartySummary(result);
       calculateAll(temp, reducerList, totalLoot);
     };
