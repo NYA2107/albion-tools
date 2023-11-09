@@ -12,7 +12,6 @@ import {
   Typography,
 } from "antd";
 import { MemberType } from "../PartyTimeTracker";
-import _ from "lodash";
 import TextArea from "antd/es/input/TextArea";
 import {
   BorderlessTableOutlined,
@@ -23,6 +22,7 @@ import {
   UsergroupAddOutlined,
 } from "@ant-design/icons";
 import ReducerAction from "./components/ReducerAction";
+import calculateLootPartyPercentage from "../Global/helper/calculateLootPartyPercentage";
 
 // interface LootReducerType {
 //   name: string;
@@ -53,16 +53,7 @@ const LootSplitTool = () => {
     if (!jsonStorageData || !jsonElapsedTime) return;
     let storageData: MemberType[] = JSON.parse(jsonStorageData);
     const elapsedTime = parseInt(jsonElapsedTime);
-    let totalMemberTimePlayed = 0;
-    storageData.map((v) => {
-      totalMemberTimePlayed += v.timePlayed;
-    });
-    storageData = storageData.map((v, i) => {
-      return _.assign(v, {
-        no: i + 1,
-        splitPercentage: (v.timePlayed / totalMemberTimePlayed) * 100,
-      });
-    });
+    storageData = calculateLootPartyPercentage(storageData);
     setElapsedTime(elapsedTime);
     setMemberList(storageData);
   };
