@@ -3,6 +3,7 @@ import { MemberType } from "../../PartyTimeTracker";
 import calculateLootPartyPercentage from "./calculateLootPartyPercentage";
 
 const calculateLootPartySummary = (memberList: MemberType[]) => {
+  const timeNow = moment().toISOString();
   let temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
   temp = temp.map((v) => {
     let calculatedTimePlayed = 0;
@@ -12,7 +13,7 @@ const calculateLootPartySummary = (memberList: MemberType[]) => {
         const prevStatusLogTime = v.statusLog[i].time;
         const nextStatusLogTime = v.statusLog[i + 1]
           ? v.statusLog[i + 1].time
-          : moment().toISOString();
+          : timeNow;
         calculatedTimePlayed += moment(nextStatusLogTime).diff(
           moment(prevStatusLogTime),
           "second"
