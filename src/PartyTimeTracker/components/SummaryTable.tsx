@@ -38,6 +38,7 @@ const SummaryTable: FC<PropTypes> = (props) => {
           </Button>
         </div>
         <Table
+          rowKey={(value) => `party-summary-row-${value.id}`}
           columns={[
             { key: "no", title: "No", dataIndex: "no", width: 60 },
             { key: "name", title: "Name", dataIndex: "name" },
@@ -68,7 +69,11 @@ const SummaryTable: FC<PropTypes> = (props) => {
               title: "Loot Percentage",
               dataIndex: "splitPercentage",
               width: 300,
-              render: (text) => <Typography.Text>{text} %</Typography.Text>,
+              render: (text) => (
+                <Typography.Text>
+                  {parseFloat(text).toFixed(2)} %
+                </Typography.Text>
+              ),
             },
           ]}
           dataSource={memberList}

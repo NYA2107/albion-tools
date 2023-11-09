@@ -10,7 +10,9 @@ const calculateLootPartyPercentage = (memberList: MemberType[]) => {
   temp = temp.map((v, i) => {
     return _.assign(v, {
       no: i + 1,
-      splitPercentage: (v.timePlayed / totalMemberTimePlayed) * 100,
+      splitPercentage: v.timePlayed
+        ? (v.timePlayed / totalMemberTimePlayed) * 100
+        : 0,
     });
   });
   return temp;

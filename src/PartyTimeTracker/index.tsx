@@ -11,6 +11,8 @@ import {
   Tabs,
   Tour,
   Typography,
+  Upload,
+  notification,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import moment from "moment";
@@ -20,8 +22,10 @@ import _ from "lodash";
 import {
   CaretUpOutlined,
   CloseCircleOutlined,
+  DownloadOutlined,
   FlagOutlined,
   ReloadOutlined,
+  UploadOutlined,
   UserAddOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
@@ -29,6 +33,7 @@ import Search from "antd/es/input/Search";
 import IndividualStatusLogs from "./components/IndividualStatusLogs";
 import SummaryTable from "./components/SummaryTable";
 import calculateLootPartySummary from "../Global/helper/calculateLootPartySummary";
+import { RcFile } from "antd/es/upload";
 
 export interface StatusLogType {
   status: "Active" | "Break" | "Out";
@@ -56,6 +61,7 @@ interface LogType {
 
 const PartyTimeTracker = () => {
   const floatButtonRef = useRef(null);
+  const [api, contextHolder] = notification.useNotification();
   const [memberText, setMemberText] = useState<string>("");
   const [memberList, setMemberList] = useState<MemberType[]>([]);
   const [filteredMemberList, setFilteredMemberList] = useState<MemberType[]>(
@@ -142,7 +148,7 @@ const PartyTimeTracker = () => {
     memberId: string,
     status: "Active" | "Break" | "Out"
   ) => {
-    const temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
+    let temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
     const tempLog: LogType[] = JSON.parse(JSON.stringify(memberLog));
     const currIndex = _.findIndex(temp, (v) => v.id === memberId);
     temp[currIndex].statusLog?.push({
@@ -154,7 +160,7 @@ const PartyTimeTracker = () => {
 
       tempLog.push({
         id: `MEMBER-LOG-${Math.random()}`,
-        action: "Out From Party",
+        action: "Out Party",
         logTime: moment().toISOString(),
         memberName: temp[currIndex].name,
       });
@@ -174,6 +180,7 @@ const PartyTimeTracker = () => {
       });
     }
     temp[currIndex].currentStatus = status;
+    temp = calculateLootPartySummary(temp);
     localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
     setMemberList(temp);
     setFilteredMemberList(temp);
@@ -196,6 +203,36 @@ const PartyTimeTracker = () => {
     setFilteredMemberList(temp);
   };
 
+  const handleFinish = () => {
+    const timeNow = moment().toISOString();
+    let temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
+    const tempLog: LogType[] = JSON.parse(JSON.stringify(memberLog));
+    temp = temp.map((v) => {
+      if (v.currentStatus === "Out") return v;
+      const tempStatusLog = JSON.parse(JSON.stringify(v.statusLog));
+      tempStatusLog.push({
+        status: "Out",
+        time: timeNow,
+      });
+      tempLog.push({
+        id: `MEMBER-LOG-${Math.random()}`,
+        action: "Out Party",
+        logTime: timeNow,
+        memberName: v.name,
+      });
+      return Object.assign(v, {
+        currentStatus: "Out",
+        outAt: timeNow,
+        statusLog: tempStatusLog,
+      });
+    });
+    temp = calculateLootPartySummary(temp);
+    localStorage.setItem("party-time-tracker-data", JSON.stringify(temp));
+    setMemberLog(tempLog);
+    setMemberList(temp);
+    setFilteredMemberList(temp);
+  };
+
   const handleSearch = (text: string) => {
     setTextSearch(text);
   };
@@ -208,8 +245,58 @@ const PartyTimeTracker = () => {
     setFilteredMemberList(tempFilteredList);
   };
 
+  const handleExportData = () => {
+    const element = document.createElement("a");
+    const textFile = new Blob([JSON.stringify(memberList)], {
+      type: "text/plain",
+    }); //pass data from localStorage API to blob
+    element.href = URL.createObjectURL(textFile);
+    element.download = `member-list-${moment().format("DDMMYYYY")}.json`;
+    document.body.appendChild(element);
+    element.click();
+  };
+
+  const handleImportData = (file: RcFile) => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(file, "UTF-8");
+    fileReader.onload = (e) => {
+      if (!e.target || !_.isString(e.target.result)) return;
+      let result: MemberType[] = [];
+      try {
+        result = JSON.parse(e.target.result);
+      } catch (e) {
+        api.error({
+          message: `Please Upload Correct File`,
+          description: "Your file does not supported for this feature",
+          placement: "topRight",
+        });
+        return;
+      }
+      if (result.length > 0) {
+        if (!("name" in result[0])) {
+          api.error({
+            message: `Please Upload Correct File`,
+            description: "Your file does not supported for this feature",
+            placement: "topRight",
+          });
+          return;
+        }
+      }
+      api.success({
+        message: `Import Data Success`,
+        description: "Your data imported successfully",
+        placement: "topRight",
+      });
+      localStorage.setItem("party-time-tracker-data", JSON.stringify(result));
+      const temp = calculateLootPartySummary(result);
+      setMemberList(temp);
+      setFilteredMemberList(temp);
+    };
+  };
+
   return (
     <div style={{ padding: "1em" }}>
+      {contextHolder}
       <Tour
         open={openTour}
         onClose={() => setOpenTour(false)}
@@ -306,7 +393,54 @@ const PartyTimeTracker = () => {
                     >
                       Reset All
                     </Button>
+                    <Button
+                      style={{ margin: "5px" }}
+                      icon={<FlagOutlined />}
+                      size="large"
+                      type="primary"
+                      onClick={handleFinish}
+                    >
+                      Finish
+                    </Button>
                   </div>
+                </div>
+              ),
+            },
+            {
+              key: "party-tracker-action-export",
+              label: (
+                <span>
+                  <DownloadOutlined /> Export Member Log
+                </span>
+              ),
+              children: (
+                <div>
+                  <Button
+                    icon={<DownloadOutlined />}
+                    onClick={handleExportData}
+                  >
+                    Save/Export Member Log Data
+                  </Button>
+                </div>
+              ),
+            },
+            {
+              key: "party-tracker-action-import",
+              label: (
+                <span>
+                  <UploadOutlined /> Upload Member Log
+                </span>
+              ),
+              children: (
+                <div>
+                  <Upload
+                    fileList={[]}
+                    beforeUpload={(file) => handleImportData(file)}
+                  >
+                    <Button icon={<UploadOutlined />}>
+                      Upload Member Log Data
+                    </Button>
+                  </Upload>
                 </div>
               ),
             },
@@ -489,9 +623,6 @@ const PartyTimeTracker = () => {
                         children: (
                           <div style={{ display: "flex", flexWrap: "wrap" }}>
                             {outMember.map((v) => {
-                              // const hours = Math.floor(v.timePlayed / 3600);
-                              // const minutes = Math.floor((v.timePlayed % 3600) / 60);
-                              // const seconds = Math.floor(v.timePlayed % 60);
                               return (
                                 <div
                                   style={{ padding: "1em" }}
@@ -545,15 +676,20 @@ const PartyTimeTracker = () => {
                   <div>
                     <Card title="Member Log">
                       <div style={{ height: "400px", overflow: "auto" }}>
-                        <Space direction="vertical">
+                        <Space direction="vertical" style={{ width: "100%" }}>
                           {memberLog.map((v) => {
                             return (
-                              <div key={v.id}>
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1fr 1fr 120px",
+                                }}
+                                key={v.id}
+                              >
                                 <span
                                   style={{
-                                    background: "#797d7b",
-                                    color: "white",
-                                    padding: "4px",
+                                    fontWeight: "bold",
+                                    color: "gray",
                                   }}
                                 >
                                   {v.memberName}

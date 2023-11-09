@@ -24,6 +24,7 @@ const IndividualStatusLogs: FC<PropsTypes> = (props) => {
         {statusLogs?.map((v) => {
           return (
             <div
+              key={`${v.status}-${v.time}`}
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 2fr",
