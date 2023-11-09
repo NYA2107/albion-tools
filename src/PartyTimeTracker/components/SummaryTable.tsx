@@ -39,17 +39,19 @@ const SummaryTable: FC<PropTypes> = (props) => {
         </div>
         <Table
           columns={[
-            { key: "no", title: "No", dataIndex: "no" },
+            { key: "no", title: "No", dataIndex: "no", width: 60 },
             { key: "name", title: "Name", dataIndex: "name" },
             {
               key: "current-status",
               title: "Current Status",
               dataIndex: "currentStatus",
+              width: 200,
             },
             {
               key: "time-played",
               title: "Time Played",
               dataIndex: "timePlayed",
+              width: 300,
               render: (text) => {
                 const hours = Math.floor(text / 3600);
                 const minutes = Math.floor((text % 3600) / 60);
@@ -65,6 +67,7 @@ const SummaryTable: FC<PropTypes> = (props) => {
               key: "loot-percentage",
               title: "Loot Percentage",
               dataIndex: "splitPercentage",
+              width: 300,
               render: (text) => <Typography.Text>{text} %</Typography.Text>,
             },
           ]}
