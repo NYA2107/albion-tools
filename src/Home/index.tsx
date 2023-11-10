@@ -30,7 +30,7 @@ const Home = () => {
           }}
         >
           <img
-            style={{ width: "100%", position: "absolute", bottom: "-252px" }}
+            style={{ width: "100%", position: "absolute", bottom: "-208px" }}
             src={logoTisu}
           ></img>
         </div>
