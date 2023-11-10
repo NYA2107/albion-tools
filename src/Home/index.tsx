@@ -4,7 +4,7 @@ import partyTrackerWallpaper from "../Global/assets/party-tracker-wallpaper.jpg"
 import logoTisu from "../Global/assets/Tisu Paseo.png";
 import craftingWallpaper from "../Global/assets/crafting-wallpaper.jpeg";
 import { useNavigate } from "react-router-dom";
-import { SmileFilled } from "@ant-design/icons";
+import { SmileOutlined } from "@ant-design/icons";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -130,7 +130,7 @@ const Home = () => {
                 flexDirection: "column",
               }}
             >
-              <SmileFilled
+              <SmileOutlined
                 style={{
                   zIndex: 100,
                   fontSize: "60px",
