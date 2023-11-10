@@ -1,4 +1,5 @@
 import {
+  Breadcrumb,
   Button,
   Card,
   Col,
@@ -24,6 +25,7 @@ import {
   CloseCircleOutlined,
   DownloadOutlined,
   FlagOutlined,
+  HomeOutlined,
   ReloadOutlined,
   UploadOutlined,
   UserAddOutlined,
@@ -297,6 +299,23 @@ const PartyTimeTracker = () => {
   return (
     <div style={{ padding: "1em" }}>
       {contextHolder}
+      <Breadcrumb
+        style={{ marginBottom: "2em" }}
+        items={[
+          {
+            href: "/",
+            title: (
+              <>
+                <HomeOutlined />
+                <span>Home</span>
+              </>
+            ),
+          },
+          {
+            title: "Party Time Tracker",
+          },
+        ]}
+      />
       <Tour
         open={openTour}
         onClose={() => setOpenTour(false)}

@@ -4,12 +4,17 @@ import PartyTimeTracker from "./PartyTimeTracker";
 import "./main.css";
 import Layout from "./Layout";
 import LootSplitTool from "./LootSplitTool";
+import Home from "./Home";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
       {
         path: "/party-time-tracker",
         element: <PartyTimeTracker />,

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {
+  Breadcrumb,
   Button,
   Card,
   Drawer,
@@ -22,6 +23,7 @@ import {
   CaretUpOutlined,
   DeleteOutlined,
   HolderOutlined,
+  HomeOutlined,
   PercentageOutlined,
   ReloadOutlined,
   SnippetsOutlined,
@@ -231,6 +233,23 @@ const LootSplitTool = () => {
   return (
     <div style={{ padding: "1em" }}>
       {contextHolder}
+      <Breadcrumb
+        style={{ marginBottom: "2em" }}
+        items={[
+          {
+            href: "/",
+            title: (
+              <>
+                <HomeOutlined />
+                <span>Home</span>
+              </>
+            ),
+          },
+          {
+            title: "Loot Split Tool",
+          },
+        ]}
+      />
       <Tour
         open={openTour}
         onClose={() => setOpenTour(false)}
