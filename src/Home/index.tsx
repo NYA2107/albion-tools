@@ -1,4 +1,4 @@
-import { Button, Card, Space, Typography } from "antd";
+import { Badge, Button, Card, Space, Typography } from "antd";
 import lootSplitWallpaper from "../Global/assets/loot-split-wallpaper.jpg";
 import partyTrackerWallpaper from "../Global/assets/party-tracker-wallpaper.jpg";
 import logoTisu from "../Global/assets/Tisu Paseo.png";
@@ -92,58 +92,65 @@ const Home = () => {
               description="A tool for distribute party loot based on total time played of the party members"
             />
           </Card>
-          <div style={{ position: "relative", overflow: "hidden" }}>
-            <Card
-              style={{ width: 240 }}
-              cover={
-                <div
-                  style={{
-                    height: "300px",
-                    overflow: "hidden",
-                    position: "relative",
-                  }}
-                >
-                  <img
-                    alt="example"
-                    style={{ height: "100%", position: "absolute", left: -130 }}
-                    src={craftingWallpaper}
-                  />
-                </div>
-              }
-            >
-              <Card.Meta
-                title="Crafting Tool"
-                description="Tool for calculate needs, capital money and profits for items to be refined or crafted"
-              />
-            </Card>
-            <Space
-              direction="vertical"
-              style={{
-                width: "240px",
-                height: "440px",
-                background: "rgba(27, 27, 27, 0.3)",
-                position: "absolute",
-                top: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "column",
-              }}
-            >
-              <SmileOutlined
-                style={{
-                  zIndex: 100,
-                  fontSize: "60px",
-                  color: "rgba(220, 220, 220, 1)",
-                }}
-              />
-              <Typography.Text
-                style={{ zIndex: 100, color: "rgba(220, 220, 220, 1)" }}
+          <Badge.Ribbon text="Coming Soon" color="lime">
+            <div style={{ position: "relative", overflow: "hidden" }}>
+              <Card
+                style={{ width: 240 }}
+                cover={
+                  <div
+                    style={{
+                      height: "300px",
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    <img
+                      alt="example"
+                      style={{
+                        height: "100%",
+                        position: "absolute",
+                        left: -130,
+                      }}
+                      src={craftingWallpaper}
+                    />
+                  </div>
+                }
               >
-                Under Construction
-              </Typography.Text>
-            </Space>
-          </div>
+                <Card.Meta
+                  title="Crafting Tool"
+                  description="Tool for calculate needs, capital money and profits for items to be refined or crafted"
+                />
+              </Card>
+
+              <Space
+                direction="vertical"
+                style={{
+                  width: "240px",
+                  height: "440px",
+                  background: "rgba(27, 27, 27, 0.3)",
+                  position: "absolute",
+                  top: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                }}
+              >
+                <SmileOutlined
+                  style={{
+                    zIndex: 100,
+                    fontSize: "60px",
+                    color: "rgba(220, 220, 220, 1)",
+                  }}
+                />
+                <Typography.Text
+                  style={{ zIndex: 100, color: "rgba(220, 220, 220, 1)" }}
+                >
+                  Under Construction
+                </Typography.Text>
+              </Space>
+            </div>
+          </Badge.Ribbon>
         </Space>
       </Space>
     </div>
