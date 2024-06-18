@@ -38,6 +38,9 @@ import calculateLootPartySummary from "../Global/helper/calculateLootPartySummar
 import NewPartyMemberAction from "./components/NewPartyMemberAction";
 import { RcFile } from "antd/es/upload";
 import _ from "lodash";
+import Duration, { LogType } from "./components/Duration";
+import axios from "axios";
+import TextArea from "antd/es/input/TextArea";
 
 interface LootReducerType {
   id: string;
@@ -45,6 +48,11 @@ interface LootReducerType {
   type: "percentage" | "exact-value";
   value: number;
   reducerValue: number;
+}
+
+interface MemberLogType {
+  id: string;
+  logs: LogType[];
 }
 
 const LootSplitTool = () => {
@@ -56,6 +64,9 @@ const LootSplitTool = () => {
   const [totalLoot, setTotalLoot] = useState<number>(0);
   const [totalLootNett, setTotalLootNett] = useState<number>(0);
   const [isOpenActionDrawer, setIsOpenActionDrawer] = useState<boolean>(false);
+  const [memberLogs, setMemberLogs] = useState<MemberLogType[]>([]);
+  const [webhookUrl, setWebhookUrl] = useState<string>("");
+  const [splitLootTitle, setSplitLootTitle] = useState<string>("");
 
   const calculateAll = (
     members: MemberType[],
@@ -146,6 +157,21 @@ const LootSplitTool = () => {
     setMemberList(temp);
   };
 
+  const handleDurationChange = (duration: number, id: string) => {
+    handleChangeTimePlayed(duration, id);
+  };
+
+  const handleChangeLog = (logs: LogType[], id: string) => {
+    const temp: MemberLogType[] = JSON.parse(JSON.stringify(memberLogs));
+    const index = temp.findIndex((v) => v.id === id);
+    if (index < 0) {
+      temp.push({ id, logs });
+    } else {
+      temp[index].logs = logs;
+    }
+    setMemberLogs(temp);
+  };
+
   const handleChangeTimePlayed = (newTimePlayed: number, id: string) => {
     let temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
     const currIndex = temp.findIndex((v) => v.id === id);
@@ -153,6 +179,7 @@ const LootSplitTool = () => {
     temp = calculateLootPartyPercentage(temp);
     calculateAll(temp, reducerList, totalLoot);
   };
+  console.log(memberList, "A");
 
   const handleRemoveMember = (memberId: string) => {
     let temp: MemberType[] = JSON.parse(JSON.stringify(memberList));
@@ -220,6 +247,74 @@ const LootSplitTool = () => {
       const temp = calculateLootPartySummary(result);
       calculateAll(temp, reducerList, totalLoot);
     };
+  };
+
+  const handleChangeWebhookUrl = (value: string) => {
+    setWebhookUrl(value);
+  };
+
+  const buildReducerText = () => {
+    let finalText = "";
+    reducerList.map((v, i) => {
+      const reducerText = `${i + 1}. ${
+        v.name
+      } | ${new Intl.NumberFormat().format(v.value)} ${
+        v.type === "percentage" ? "%" : "Silver"
+      }\n`;
+      finalText = finalText + reducerText;
+    });
+    return finalText;
+  };
+
+  const buildMemberText = () => {
+    let finalText = `## Loot Split - ${splitLootTitle}\n`;
+    memberList.map((v, i) => {
+      const memberText = `${i + 1}. ${v.name} | ${new Intl.NumberFormat(
+        "id-ID"
+      ).format(v.timePlayed)} Seconds | ${parseFloat(
+        `${v.splitPercentage}`
+      ).toFixed(2)}% | ${new Intl.NumberFormat("id-ID").format(
+        parseInt(`${Math.round(v.lootSplit || 0)}`)
+      )} Silver\n`;
+      finalText = finalText + memberText;
+    });
+    return finalText;
+  };
+
+  const handleSendToDiscord = () => {
+    //Get all member data, get all total data
+    const payload = {
+      username: "Loot Split Bot",
+      avatar_url:
+        "https://tisu-paseo-albion-tools.vercel.app/assets/Tisu%20Paseo-c167d309.png",
+      content: buildMemberText(),
+      embeds: [
+        {
+          title: "Loot Details",
+          description: "This is the details of all the loot",
+          color: 15258703,
+          fields: [
+            {
+              name: "Total Loot",
+              value: `${new Intl.NumberFormat().format(totalLoot)}`,
+              inline: true,
+            },
+            {
+              name: "Total Loot Net",
+              value: `${new Intl.NumberFormat().format(totalLootNett)}`,
+              inline: true,
+            },
+            {
+              name: "Reducers",
+              value: buildReducerText(),
+            },
+          ],
+        },
+      ],
+    };
+    axios.post(webhookUrl, payload).then((resp) => {
+      console.log(resp);
+    });
   };
 
   const handleResetAllData = () => {
@@ -352,7 +447,6 @@ const LootSplitTool = () => {
                   <NewPartyMemberAction onAddNewMember={handleAddNewMember} />
                 ),
               },
-
               {
                 key: "action-import-data",
                 label: (
@@ -381,6 +475,39 @@ const LootSplitTool = () => {
                         </Button>
                       </Upload>
                     </div>
+                  </Space>
+                ),
+              },
+              {
+                key: "action-discord",
+                label: (
+                  <span>
+                    <UsergroupAddOutlined /> Discord
+                  </span>
+                ),
+                children: (
+                  <Space direction="vertical">
+                    <TextArea
+                      style={{ width: "400px" }}
+                      placeholder="Loot Split Title"
+                      value={splitLootTitle}
+                      onChange={(e) => setSplitLootTitle(e.target.value)}
+                    />
+                    <Space>
+                      <Input
+                        value={webhookUrl}
+                        placeholder="Webhook discord"
+                        onChange={(e) => handleChangeWebhookUrl(e.target.value)}
+                      />
+                      <Button
+                        onClick={() => {
+                          handleSendToDiscord();
+                        }}
+                        type="primary"
+                      >
+                        Send To Discord
+                      </Button>
+                    </Space>
                   </Space>
                 ),
               },
@@ -548,6 +675,26 @@ const LootSplitTool = () => {
                   key={`column-name-${record.id}`}
                   onChange={(e) => handleChangeName(e.target.value, record.id)}
                   value={text}
+                />
+              );
+            },
+          },
+          {
+            title: "Duration",
+            dataIndex: "logs",
+            width: 350,
+            key: "column-member",
+            render: (_value, record) => {
+              const temp = memberLogs.find((v) => v.id === record.id);
+              return (
+                <Duration
+                  value={temp?.logs || []}
+                  onLogsChange={(logs) => {
+                    handleChangeLog(logs, record.id);
+                  }}
+                  onDurationChange={(duration) => {
+                    handleDurationChange(duration, record.id);
+                  }}
                 />
               );
             },
