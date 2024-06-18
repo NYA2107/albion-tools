@@ -24,6 +24,7 @@ import {
   DeleteOutlined,
   HolderOutlined,
   HomeOutlined,
+  LinkOutlined,
   PercentageOutlined,
   ReloadOutlined,
   SnippetsOutlined,
@@ -284,7 +285,7 @@ const LootSplitTool = () => {
   const handleSendToDiscord = () => {
     //Get all member data, get all total data
     const payload = {
-      username: "Loot Split Bot",
+      username: "Tisu Paseo Bot",
       avatar_url:
         "https://tisu-paseo-albion-tools.vercel.app/assets/Tisu%20Paseo-c167d309.png",
       content: buildMemberText(),
@@ -482,7 +483,7 @@ const LootSplitTool = () => {
                 key: "action-discord",
                 label: (
                   <span>
-                    <UsergroupAddOutlined /> Discord
+                    <LinkOutlined /> Discord
                   </span>
                 ),
                 children: (
