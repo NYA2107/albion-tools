@@ -1,23 +1,3 @@
-import { useRef, useState } from "react";
-import {
-  Breadcrumb,
-  Button,
-  Card,
-  Drawer,
-  FloatButton,
-  Input,
-  InputNumber,
-  Space,
-  Statistic,
-  Table,
-  Tabs,
-  Tooltip,
-  Tour,
-  Typography,
-  Upload,
-  notification,
-} from "antd";
-import { MemberType } from "../PartyTimeTracker";
 import {
   BorderlessTableOutlined,
   CaretUpOutlined,
@@ -32,16 +12,36 @@ import {
   UploadOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
+import {
+  Breadcrumb,
+  Button,
+  Card,
+  Drawer,
+  FloatButton,
+  Input,
+  InputNumber,
+  Space,
+  Statistic,
+  Table,
+  Tabs,
+  Tour,
+  Typography,
+  Upload,
+  notification,
+} from "antd";
+import { RcFile } from "antd/es/upload";
+import axios from "axios";
+import _ from "lodash";
+import { useRef, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import ReducerAction from "./components/ReducerAction";
 import calculateLootPartyPercentage from "../Global/helper/calculateLootPartyPercentage";
 import calculateLootPartySummary from "../Global/helper/calculateLootPartySummary";
-import NewPartyMemberAction from "./components/NewPartyMemberAction";
-import { RcFile } from "antd/es/upload";
-import _ from "lodash";
+import { MemberType } from "../PartyTimeTracker";
+import Discord from "./components/Discord";
 import Duration, { LogType } from "./components/Duration";
-import axios from "axios";
-import TextArea from "antd/es/input/TextArea";
+import NewPartyMemberAction from "./components/NewPartyMemberAction";
+import ReducerAction from "./components/ReducerAction";
+import TotalLoot from "./components/TotalLoot";
 
 interface LootReducerType {
   id: string;
@@ -250,10 +250,6 @@ const LootSplitTool = () => {
     };
   };
 
-  const handleChangeWebhookUrl = (value: string) => {
-    setWebhookUrl(value);
-  };
-
   const buildReducerText = () => {
     let finalText = "";
     reducerList.map((v, i) => {
@@ -400,7 +396,13 @@ const LootSplitTool = () => {
                 ),
                 children: (
                   <Space direction="vertical" style={{ width: "500px" }}>
-                    <div>
+                    <TotalLoot
+                      totalLoot={totalLoot}
+                      onTotalLootChange={(value) =>
+                        handleChangeTotalLoot(value || 0)
+                      }
+                    />
+                    {/* <div>
                       <Typography.Text>Total Loot</Typography.Text>
                       <div>
                         <Tooltip
@@ -418,7 +420,7 @@ const LootSplitTool = () => {
                           />
                         </Tooltip>
                       </div>
-                    </div>
+                    </div> */}
                   </Space>
                 ),
               },
@@ -487,29 +489,36 @@ const LootSplitTool = () => {
                   </span>
                 ),
                 children: (
-                  <Space direction="vertical">
-                    <TextArea
-                      style={{ width: "400px" }}
-                      placeholder="Loot Split Title"
-                      value={splitLootTitle}
-                      onChange={(e) => setSplitLootTitle(e.target.value)}
-                    />
-                    <Space>
-                      <Input
-                        value={webhookUrl}
-                        placeholder="Webhook discord"
-                        onChange={(e) => handleChangeWebhookUrl(e.target.value)}
-                      />
-                      <Button
-                        onClick={() => {
-                          handleSendToDiscord();
-                        }}
-                        type="primary"
-                      >
-                        Send To Discord
-                      </Button>
-                    </Space>
-                  </Space>
+                  <Discord
+                    splitLootTitle={splitLootTitle}
+                    webhookUrl={webhookUrl}
+                    onTitleChange={(value) => setSplitLootTitle(value)}
+                    onWebhookChange={(value) => setWebhookUrl(value)}
+                    onSendToDiscord={handleSendToDiscord}
+                  />
+                  // <Space direction="vertical">
+                  //   <TextArea
+                  //     style={{ width: "400px" }}
+                  //     placeholder="Loot Split Title"
+                  //     value={splitLootTitle}
+                  //     onChange={(e) => setSplitLootTitle(e.target.value)}
+                  //   />
+                  //   <Space>
+                  //     <Input
+                  //       value={webhookUrl}
+                  //       placeholder="Webhook discord"
+                  //       onChange={(e) => handleChangeWebhookUrl(e.target.value)}
+                  //     />
+                  //     <Button
+                  //       onClick={() => {
+                  //         handleSendToDiscord();
+                  //       }}
+                  //       type="primary"
+                  //     >
+                  //       Send To Discord
+                  //     </Button>
+                  //   </Space>
+                  // </Space>
                 ),
               },
             ]}
